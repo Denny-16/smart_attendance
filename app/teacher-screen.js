@@ -1,19 +1,21 @@
+// app/teacher-screen.js
 import React, { useState, useRef } from "react";
 import { View, Text, StyleSheet, Alert } from "react-native";
-import PrimaryButton from "../../components/PrimaryButton";
-import BLEService from "../../services/bleService";
-import AttendanceService from "../../services/attendanceService";
+import PrimaryButton from "../components/PrimaryButton";
+import BLEService from "../services/bleService";
+import AttendanceService from "../services/attendanceService";
+import { Link, useRouter } from "expo-router";
 
-export default function TeacherIndex() {
+
+export default function TeacherScreen() {
   const [running, setRunning] = useState(false);
   const [classId, setClassId] = useState(null);
   const [sessionToken, setSessionToken] = useState(null);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const timerRef = useRef(null);
-
+  const router = useRouter();
   async function handleStartClass() {
     try {
-      // call AttendanceService to start a class (stub returns classId+token)
       const res = await AttendanceService.startClass({ teacherId: "demo-teacher", courseId: "CSE101" });
       const cid = res.classId || "demo-class";
       const token = res.sessionToken || generateToken(6);
@@ -22,27 +24,26 @@ export default function TeacherIndex() {
       setSessionToken(token);
       setRunning(true);
 
-      // broadcast token for 20 seconds (changeable)
-      const duration = 20;
+      const duration = 20; // seconds to broadcast
       setSecondsLeft(duration);
 
       BLEService.startBroadcast({ classId: cid, sessionToken: token });
 
-      // start UI countdown
       timerRef.current = setInterval(() => {
         setSecondsLeft((s) => {
           if (s <= 1) {
             clearInterval(timerRef.current);
-            handleEndClass(); // auto stop after time ends
+            timerRef.current = null;
+            handleEndClass();
             return 0;
           }
           return s - 1;
         });
       }, 1000);
 
-      Alert.alert("Class started", `classId: ${cid}\ntoken: ${token}\nBroadcasting for ${duration}s`);
+      Alert.alert("Class started", `Token: ${token}\nBroadcasting ${duration}s`);
     } catch (err) {
-      Alert.alert("Error starting class", err.message || String(err));
+      Alert.alert("Start error", err.message || String(err));
     }
   }
 
@@ -64,15 +65,15 @@ export default function TeacherIndex() {
       <Text style={s.title}>Teacher — Start Class</Text>
 
       <View style={s.info}>
-        <Text style={s.label}>Active class:</Text>
+        <Text style={s.label}>Active class</Text>
         <Text style={s.value}>{classId ?? "None"}</Text>
 
-        <Text style={[s.label, { marginTop: 12 }]}>Session token:</Text>
+        <Text style={[s.label, { marginTop: 12 }]}>Session token</Text>
         <Text style={s.value}>{sessionToken ?? "—"}</Text>
 
-        <Text style={[s.label, { marginTop: 12 }]}>Broadcast status:</Text>
+        <Text style={[s.label, { marginTop: 12 }]}>Broadcast</Text>
         <Text style={[s.value, { color: running ? "#0a74ff" : "#666" }]}>
-          {running ? `Broadcasting — ${secondsLeft}s left` : "Stopped"}
+          {running ? `Broadcasting — ${secondsLeft}s` : "Stopped"}
         </Text>
       </View>
 
@@ -82,13 +83,13 @@ export default function TeacherIndex() {
         <PrimaryButton title="Stop Broadcast" onPress={handleEndClass} />
       )}
 
-      <PrimaryButton title="View attendees" onPress={() => { /* navigate to /teacher/class via router if you want */ }} />
+      <PrimaryButton title="View attendees (teacher/class page)" onPress={() => router.push("/teacher/class")}/>
     </View>
   );
 }
 
 function generateToken(len = 6) {
-  const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // avoid confusing 0/O, 1/I
+  const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
   let out = "";
   for (let i = 0; i < len; i++) out += chars[Math.floor(Math.random() * chars.length)];
   return out;
@@ -97,11 +98,7 @@ function generateToken(len = 6) {
 const s = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: "#fff" },
   title: { fontSize: 20, fontWeight: "800", marginBottom: 12 },
-  info: { backgroundColor: "#f9fafb", padding: 14, borderRadius: 10, marginBottom: 16 },
+  info: { backgroundColor: "#f6f7fb", padding: 14, borderRadius: 10, marginBottom: 18 },
   label: { color: "#666", fontSize: 13 },
   value: { fontSize: 18, fontWeight: "700", marginTop: 6 },
 });
-
-
-
-

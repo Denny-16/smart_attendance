@@ -1,51 +1,37 @@
 // services/bleService.js
-let scanCallback = null;
-let broadcastInterval = null;
+const BLE = {
+  broadcasting: null,
+  broadcastIntervalId: null,
+  scanCallback: null,
+};
 
-/**
- * startScan(callback)
- * callback receives token object: { classId, sessionToken }
- * Demo: calls callback after 2s with demo token.
- */
-function startScan(cb) {
-  scanCallback = cb;
-  console.log("[BLE] startScan (demo) - will deliver demo token in 2s");
-  // simulate receiving token after 2s
-  setTimeout(() => {
-    if (scanCallback) {
-      const tokenObj = { classId: "demo-class", sessionToken: "demo-token" };
-      console.log("[BLE] demo token delivered:", tokenObj);
-      try { scanCallback(tokenObj); } catch (e) { console.warn("[BLE] scan callback error", e); }
+export default {
+  startBroadcast({ classId, sessionToken } = {}) {
+    BLE.broadcasting = { classId, sessionToken };
+    if (BLE.broadcastIntervalId) clearInterval(BLE.broadcastIntervalId);
+    BLE.broadcastIntervalId = setInterval(() => {
+      if (BLE.scanCallback && BLE.broadcasting) {
+        BLE.scanCallback({ classId: BLE.broadcasting.classId, sessionToken: BLE.broadcasting.sessionToken });
+      }
+    }, 1500);
+  },
+
+  stopBroadcast() {
+    BLE.broadcasting = null;
+    if (BLE.broadcastIntervalId) {
+      clearInterval(BLE.broadcastIntervalId);
+      BLE.broadcastIntervalId = null;
     }
-  }, 2000);
-}
+  },
 
-/** stopScan */
-function stopScan() {
-  console.log("[BLE] stopScan (demo)");
-  scanCallback = null;
-}
+  startScan(cb) {
+    BLE.scanCallback = cb;
+    if (BLE.broadcasting && BLE.scanCallback) {
+      setTimeout(() => BLE.scanCallback({ classId: BLE.broadcasting.classId, sessionToken: BLE.broadcasting.sessionToken }), 300);
+    }
+  },
 
-/**
- * startBroadcast(sessionInfo)
- * sessionInfo = { classId, sessionToken, ttl? }
- * Demo: logs and periodically prints broadcast message.
- */
-function startBroadcast(sessionInfo = { classId: "demo-class", sessionToken: "demo-token" }) {
-  console.log("[BLE] startBroadcast (demo):", sessionInfo);
-  if (broadcastInterval) clearInterval(broadcastInterval);
-  broadcastInterval = setInterval(() => {
-    console.log("[BLE] broadcasting token:", sessionInfo.sessionToken);
-  }, 2000);
-}
-
-/** stopBroadcast */
-function stopBroadcast() {
-  if (broadcastInterval) {
-    clearInterval(broadcastInterval);
-    broadcastInterval = null;
-  }
-  console.log("[BLE] stopBroadcast (demo)");
-}
-
-export default { startScan, stopScan, startBroadcast, stopBroadcast };
+  stopScan() {
+    BLE.scanCallback = null;
+  },
+};

@@ -71,14 +71,12 @@ export default function StudentHome() {
             title="Join Class (Student)"
             onPress={() => router.push("/student/class")}
           />
-          <PrimaryButton
-            title="Start Class (Teacher)"
-            onPress={() => router.push("/teacher/index")}
-          />
+        
           <PrimaryButton
             title="Check status (Teacher)"
             onPress={() => router.push("/teacher/class")}
           />
+          <PrimaryButton title="Start Class (Teacher)" onPress={() => router.push("/teacher-screen")} />
 
           {/* Modal link styled like a button for consistent UI */}
           <Link href="/modal" asChild>
