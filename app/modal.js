@@ -1,11 +1,11 @@
-import { Link } from 'expo-router';
-import { StyleSheet, View, Text } from 'react-native';
+import { Link } from "expo-router";
+import { StyleSheet, View, Text } from "react-native";
 
 export default function ModalScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>This is a modal</Text>
-      <Link href="/" dismissTo style={styles.link}>
+      <Link href="/" style={styles.link}>
         <Text style={styles.linkText}>Go to home screen</Text>
       </Link>
     </View>
@@ -13,8 +13,8 @@ export default function ModalScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  title: { fontSize: 20, fontWeight: '700', marginBottom: 20 },
-  link: { marginTop: 15 },
-  linkText: { color: 'blue' }
+  container: { flex: 1, alignItems: "center", justifyContent: "center", padding: 20 },
+  title: { fontSize: 20, fontWeight: "700" },
+  link: { marginTop: 15, paddingVertical: 15 },
+  linkText: { color: "#2563eb", fontWeight: "600" },
 });

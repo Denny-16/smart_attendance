@@ -1,6 +1,7 @@
-import React from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { colors } from '../styles/theme';
+// components/PrimaryButton.js
+import React from "react";
+import { TouchableOpacity, Text, StyleSheet } from "react-native";
+import { colors } from "../styles/theme";
 
 export default function PrimaryButton({ title, onPress, disabled }) {
   return (
@@ -11,14 +12,7 @@ export default function PrimaryButton({ title, onPress, disabled }) {
 }
 
 const styles = StyleSheet.create({
-  btn: {
-    backgroundColor: colors.primary,
-    paddingVertical: 12,
-    paddingHorizontal: 22,
-    borderRadius: 10,
-    marginVertical: 8,
-    alignItems: 'center'
-  },
-  text: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  btn: { backgroundColor: colors.primary, paddingVertical: 12, paddingHorizontal: 22, borderRadius: 10, marginVertical: 8 },
+  text: { color: "#fff", fontWeight: "700", fontSize: 16 },
   disabled: { opacity: 0.6 }
 });
