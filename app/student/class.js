@@ -12,6 +12,15 @@ export default function StudentClass() {
   const [manualToken, setManualToken] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // 🔹 Fetch active classId from AttendanceService
+  const [activeClassId, setActiveClassId] = useState(null);
+  useEffect(() => {
+    (async () => {
+      const cid = await AttendanceService.getActiveClassId();
+      setActiveClassId(cid);
+    })();
+  }, []);
+
   useEffect(() => {
     BLEService.startScan((tokenObj) => {
       if (!tokenObj) return;
@@ -52,7 +61,7 @@ export default function StudentClass() {
         return;
       }
 
-      // IMPORTANT: pass the full student object so teacher sees names
+      // ✅ Mark attendance with activeClassId + student object
       await AttendanceService.markAttendance({
         classId: tokenObj.classId,
         student: { id: user.id, name: user.name, email: user.email },
@@ -74,7 +83,11 @@ export default function StudentClass() {
       Alert.alert("Enter token", "Please enter the token provided by the teacher.");
       return;
     }
-    const tokenObj = sessionInfo ?? { classId: "demo-class", sessionToken: manualToken.trim() };
+    // 🔹 Use activeClassId from AttendanceService
+    const tokenObj = sessionInfo ?? {
+      classId: activeClassId || "demo-class",
+      sessionToken: manualToken.trim(),
+    };
     await validateAndMark(tokenObj);
   }
 
@@ -87,20 +100,38 @@ export default function StudentClass() {
         <View style={s.tokenBox}>
           <Text style={s.tokenLabel}>Token found</Text>
           <Text style={s.tokenValue}>{sessionInfo.sessionToken}</Text>
-          <PrimaryButton title={loading ? "Verifying..." : "Validate token"} onPress={() => validateAndMark(sessionInfo)} disabled={loading} />
+          <PrimaryButton
+            title={loading ? "Verifying..." : "Validate token"}
+            onPress={() => validateAndMark(sessionInfo)}
+            disabled={loading}
+          />
         </View>
       )}
 
       <Text style={{ color: "#666", marginTop: 12 }}>Or enter token manually</Text>
-      <TextInput value={manualToken} onChangeText={setManualToken} placeholder="Enter token" style={s.input} autoCapitalize="characters" />
-      <PrimaryButton title="Validate token (manual)" onPress={handleManualValidate} disabled={loading} />
+      <TextInput
+        value={manualToken}
+        onChangeText={setManualToken}
+        placeholder="Enter token"
+        style={s.input}
+        autoCapitalize="characters"
+      />
+      <PrimaryButton
+        title="Validate token (manual)"
+        onPress={handleManualValidate}
+        disabled={loading}
+      />
 
       <View style={{ height: 20 }} />
       <PrimaryButton
         title="Force Mark (debug)"
         onPress={async () => {
           const user = AuthService.getCurrentUser();
-          await AttendanceService.markAttendance({ classId: "demo-class", student: { id: user.id, name: user.name }, method: "manual+biometric" });
+          await AttendanceService.markAttendance({
+            classId: activeClassId || "demo-class",
+            student: { id: user.id, name: user.name },
+            method: "manual+biometric",
+          });
           setStatus("Attendance marked (manual) ✅");
           Alert.alert("Marked (debug)");
         }}
@@ -116,5 +147,5 @@ const s = StyleSheet.create({
   tokenBox: { backgroundColor: "#f2fbff", borderRadius: 10, padding: 12, marginBottom: 8 },
   tokenLabel: { color: "#0666c8", fontWeight: "700" },
   tokenValue: { fontSize: 22, fontWeight: "800", marginVertical: 8, color: "#0a74ff" },
-  input: { borderWidth: 1, borderColor: "#ddd", padding: 10, borderRadius: 8, marginTop: 8 }
+  input: { borderWidth: 1, borderColor: "#ddd", padding: 10, borderRadius: 8, marginTop: 8 },
 });
