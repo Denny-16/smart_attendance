@@ -1,50 +1,62 @@
-# Welcome to your Expo app 👋
+# 📱 Smart Attendance (TrackON)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A **Smart Attendance System** built using **React Native + Expo Router**.  
+It simulates **teacher–student interaction** for attendance using tokens,  
+biometric verification (mocked), and real-time attendee updates.
 
-## Get started
+---
 
-1. Install dependencies
+## 🚀 Features
+### 👩‍🏫 Teacher
+- **Start Class** → Generates a session token and broadcasts it for 20 seconds.  
+- **Check Status** → Displays a live list of attendees with **name, email, method, and timestamp**.
 
+### 👨‍🎓 Student
+- **Join Class** → Receives or enters a session token.  
+- **Validate Token** → Token checked, then biometric verification (mocked).  
+- **Mark Attendance** → Attendance recorded with timestamp.
+
+---
+
+## 📂 Project Structure
+my-app/
+├── app/
+│ ├── index.js # Home screen (student + teacher entry point)
+│ ├── student/
+│ │ └── class.js # Student: join/validate class
+│ ├── teacher/
+│ │ └── class.js # Teacher: check attendees
+│ └── teacher-screen.js # Teacher: start class & token broadcast
+├── components/
+│ └── PrimaryButton.js # Reusable styled button
+├── services/
+│ ├── attendanceService.js
+│ ├── authService.js
+│ └── bleService.js
+└── README.md
+
+
+
+---
+
+## ⚙️ Setup & Run
+
+1. **Clone the repository**
    ```bash
-   npm install
-   ```
+   git clone https://github.com/<your-username>/smart_attendance.git
+   cd smart_attendance/my-app
+2.Install dependencies
+npm install
 
-2. Start the app
+3.Install Expo dependencies
+npx expo install expo-router react-native-safe-area-context react-native-gesture-handler react-native-reanimated
 
-   ```bash
-   npx expo start
-   ```
 
-In the output, you'll find options to open the app in a
+4.Run the app
+npx expo start -c
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+5.Open in:
 
-## Get a fresh project
+Expo Go (scan QR code)
 
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
