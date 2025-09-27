@@ -1,107 +1,87 @@
-import React, { useState, useRef } from "react";
-import { View, Text, StyleSheet, Alert } from "react-native";
+import React from "react";
+import { View, Text, StyleSheet, FlatList, ScrollView, Image } from "react-native";
+import { Link } from "expo-router";
 import PrimaryButton from "../../components/PrimaryButton";
-import BLEService from "../../services/bleService";
-import AttendanceService from "../../services/attendanceService";
+import { colors } from "../../styles/theme";
+
+const todayClasses = [
+  { id: "1", title: "Data Structures", time: "09:00 AM", attendees: ["Kalyan"] },
+  { id: "2", title: "Operating Systems", time: "11:00 AM", attendees: [] },
+  { id: "3", title: "Networks", time: "02:00 PM", attendees: [] },
+];
 
 export default function TeacherIndex() {
-  const [running, setRunning] = useState(false);
-  const [classId, setClassId] = useState(null);
-  const [sessionToken, setSessionToken] = useState(null);
-  const [secondsLeft, setSecondsLeft] = useState(0);
-  const timerRef = useRef(null);
-
-  async function handleStartClass() {
-    try {
-      // call AttendanceService to start a class (stub returns classId+token)
-      const res = await AttendanceService.startClass({ teacherId: "demo-teacher", courseId: "CSE101" });
-      const cid = res.classId || "demo-class";
-      const token = res.sessionToken || generateToken(6);
-
-      setClassId(cid);
-      setSessionToken(token);
-      setRunning(true);
-
-      // broadcast token for 20 seconds (changeable)
-      const duration = 20;
-      setSecondsLeft(duration);
-
-      BLEService.startBroadcast({ classId: cid, sessionToken: token });
-
-      // start UI countdown
-      timerRef.current = setInterval(() => {
-        setSecondsLeft((s) => {
-          if (s <= 1) {
-            clearInterval(timerRef.current);
-            handleEndClass(); // auto stop after time ends
-            return 0;
-          }
-          return s - 1;
-        });
-      }, 1000);
-
-      Alert.alert("Class started", `classId: ${cid}\ntoken: ${token}\nBroadcasting for ${duration}s`);
-    } catch (err) {
-      Alert.alert("Error starting class", err.message || String(err));
-    }
-  }
-
-  function handleEndClass() {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-    BLEService.stopBroadcast();
-    setRunning(false);
-    setClassId(null);
-    setSessionToken(null);
-    setSecondsLeft(0);
-    Alert.alert("Class ended");
-  }
+  const teacher = { name: "Denny" };
 
   return (
-    <View style={s.container}>
-      <Text style={s.title}>Teacher — Start Class</Text>
-
-      <View style={s.info}>
-        <Text style={s.label}>Active class:</Text>
-        <Text style={s.value}>{classId ?? "None"}</Text>
-
-        <Text style={[s.label, { marginTop: 12 }]}>Session token:</Text>
-        <Text style={s.value}>{sessionToken ?? "—"}</Text>
-
-        <Text style={[s.label, { marginTop: 12 }]}>Broadcast status:</Text>
-        <Text style={[s.value, { color: running ? "#0a74ff" : "#666" }]}>
-          {running ? `Broadcasting — ${secondsLeft}s left` : "Stopped"}
-        </Text>
+    <ScrollView style={s.page} contentContainerStyle={s.container}>
+      {/* Header */}
+      <View style={s.header}>
+        <View>
+          <Text style={s.greeting}>Welcome back,</Text>
+          <Text style={s.name}>{teacher.name}</Text>
+        </View>
+        <Image
+          source={require("../../assets/denny.jpeg")} // 👈 add your photo here
+          style={s.avatar}
+          accessibilityLabel="Profile picture"
+        />
       </View>
 
-      {!running ? (
-        <PrimaryButton title="Start Class (generate token)" onPress={handleStartClass} />
-      ) : (
-        <PrimaryButton title="Stop Broadcast" onPress={handleEndClass} />
-      )}
+      {/* Classes */}
+      <Text style={s.sectionTitle}>{"Today's Classes"}</Text>
+      <FlatList
+        data={todayClasses}
+        keyExtractor={(i) => i.id}
+        renderItem={({ item }) => (
+          <View style={s.classCard}>
+            <Text style={s.classTitle}>
+              {item.time} - {item.title}
+            </Text>
+            <Text style={s.classSub}>
+              Attended: {item.attendees.length > 0 ? item.attendees.join(", ") : "None"}
+            </Text>
+          </View>
+        )}
+      />
 
-      <PrimaryButton title="View attendees" onPress={() => { /* navigate to /teacher/class via router if you want */ }} />
-    </View>
+      {/* Actions */}
+      <View style={s.actions}>
+        <Link href="/teacher-screen" asChild>
+          <PrimaryButton title="Start Class" />
+        </Link>
+        <Link href="/teacher/class" asChild>
+          <PrimaryButton title="Check Status" />
+        </Link>
+      </View>
+    </ScrollView>
   );
 }
 
-function generateToken(len = 6) {
-  const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"; // avoid confusing 0/O, 1/I
-  let out = "";
-  for (let i = 0; i < len; i++) out += chars[Math.floor(Math.random() * chars.length)];
-  return out;
-}
-
 const s = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: "#fff" },
-  title: { fontSize: 20, fontWeight: "800", marginBottom: 12 },
-  info: { backgroundColor: "#f9fafb", padding: 14, borderRadius: 10, marginBottom: 16 },
-  label: { color: "#666", fontSize: 13 },
-  value: { fontSize: 18, fontWeight: "700", marginTop: 6 },
+  page: { backgroundColor: colors.bg },
+  container: { padding: 16, paddingBottom: 40 },
+
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 18,
+  },
+  greeting: { color: colors.muted, fontSize: 14 },
+  name: { fontSize: 20, fontWeight: "800", color: colors.text },
+  avatar: { width: 56, height: 56, borderRadius: 28, backgroundColor: "#eee" },
+
+  sectionTitle: { fontSize: 16, fontWeight: "700", marginVertical: 10 },
+
+  classCard: {
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 10,
+  },
+  classTitle: { fontSize: 15, fontWeight: "700" },
+  classSub: { color: "#666", marginTop: 4 },
+
+  actions: { marginTop: 20 },
 });
-
-
-
-
