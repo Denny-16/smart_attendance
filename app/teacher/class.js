@@ -1,62 +1,22 @@
 // app/teacher/class.js
-import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-  RefreshControl,
-} from "react-native";
-import AttendanceService from "../../services/attendanceService";
+import React from "react";
+import { View, Text, FlatList, StyleSheet } from "react-native";
 
 export default function TeacherClass() {
-  const [attendees, setAttendees] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [activeClassId, setActiveClassId] = useState(null);
-
-  async function poll() {
-    setLoading(true);
-    try {
-      // 🔹 get active classId dynamically
-      const cid = await AttendanceService.getActiveClassId();
-      setActiveClassId(cid);
-
-      if (!cid) {
-        setAttendees([]);
-        return;
-      }
-
-      const res = await AttendanceService.getAttendees({ classId: cid });
-      setAttendees(res.present || []);
-    } catch (err) {
-      // ignore for demo
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    let mounted = true;
-    poll();
-    const id = setInterval(() => {
-      if (!mounted) return;
-      poll();
-    }, 2000); // poll every 2s
-
-    return () => {
-      mounted = false;
-      clearInterval(id);
-    };
-  }, []);
+  // Hardcoded Kalyan as attendee
+  const attendees = [
+    {
+      studentId: "kalyan01",
+      name: "Kalyan",
+      email: "kalyan@example.com",
+      method: "BLE + Biometric",
+      at: Date.now(),
+    },
+  ];
 
   return (
     <View style={s.container}>
       <Text style={s.title}>Students Present</Text>
-      {activeClassId ? (
-        <Text style={s.subTitle}>Class ID: {activeClassId}</Text>
-      ) : (
-        <Text style={s.subTitle}>No active class</Text>
-      )}
 
       <FlatList
         data={attendees}
@@ -65,19 +25,19 @@ export default function TeacherClass() {
           <View style={s.row}>
             <View style={s.avatar}>
               <Text style={s.avatarText}>
-                {(item.name || "U").slice(0, 1).toUpperCase()}
+                {item.name.slice(0, 1).toUpperCase()}
               </Text>
             </View>
 
             <View style={s.info}>
-              <Text style={s.name}>{item.name || item.studentId}</Text>
-              <Text style={s.meta}>{item.email || "—"}</Text>
+              <Text style={s.name}>{item.name}</Text>
+              <Text style={s.meta}>{item.email}</Text>
             </View>
 
             <View style={s.metaRight}>
               <Text style={s.method}>{item.method}</Text>
               <Text style={s.time}>
-                {item.at ? new Date(item.at).toLocaleTimeString() : "-"}
+                {new Date(item.at).toLocaleTimeString()}
               </Text>
             </View>
           </View>
@@ -87,9 +47,6 @@ export default function TeacherClass() {
             No attendees yet
           </Text>
         }
-        refreshControl={
-          <RefreshControl refreshing={loading} onRefresh={poll} />
-        }
       />
     </View>
   );
@@ -97,8 +54,7 @@ export default function TeacherClass() {
 
 const s = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: "#fff" },
-  title: { fontSize: 18, fontWeight: "700", marginBottom: 6 },
-  subTitle: { fontSize: 14, color: "#666", marginBottom: 12 },
+  title: { fontSize: 18, fontWeight: "700", marginBottom: 12 },
   row: {
     flexDirection: "row",
     alignItems: "center",

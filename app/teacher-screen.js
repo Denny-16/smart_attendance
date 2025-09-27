@@ -4,8 +4,7 @@ import { View, Text, StyleSheet, Alert } from "react-native";
 import PrimaryButton from "../components/PrimaryButton";
 import BLEService from "../services/bleService";
 import AttendanceService from "../services/attendanceService";
-import { Link, useRouter } from "expo-router";
-
+import { useRouter } from "expo-router";
 
 export default function TeacherScreen() {
   const [running, setRunning] = useState(false);
@@ -14,9 +13,13 @@ export default function TeacherScreen() {
   const [secondsLeft, setSecondsLeft] = useState(0);
   const timerRef = useRef(null);
   const router = useRouter();
+
   async function handleStartClass() {
     try {
-      const res = await AttendanceService.startClass({ teacherId: "demo-teacher", courseId: "CSE101" });
+      const res = await AttendanceService.startClass({
+        teacherId: "denny", // teacher name hardcoded
+        courseId: "CSE101",
+      });
       const cid = res.classId || "demo-class";
       const token = res.sessionToken || generateToken(6);
 
@@ -24,7 +27,7 @@ export default function TeacherScreen() {
       setSessionToken(token);
       setRunning(true);
 
-      const duration = 20; // seconds to broadcast
+      const duration = 20; // seconds
       setSecondsLeft(duration);
 
       BLEService.startBroadcast({ classId: cid, sessionToken: token });
@@ -65,7 +68,10 @@ export default function TeacherScreen() {
       <Text style={s.title}>Teacher — Start Class</Text>
 
       <View style={s.info}>
-        <Text style={s.label}>Active class</Text>
+        <Text style={s.label}>Teacher</Text>
+        <Text style={s.value}>Denny</Text>
+
+        <Text style={[s.label, { marginTop: 12 }]}>Active class</Text>
         <Text style={s.value}>{classId ?? "None"}</Text>
 
         <Text style={[s.label, { marginTop: 12 }]}>Session token</Text>
@@ -83,7 +89,10 @@ export default function TeacherScreen() {
         <PrimaryButton title="Stop Broadcast" onPress={handleEndClass} />
       )}
 
-      <PrimaryButton title="View attendees (teacher/class page)" onPress={() => router.push("/teacher/class")}/>
+      <PrimaryButton
+        title="View attendees (teacher/class page)"
+        onPress={() => router.push("/teacher/class")}
+      />
     </View>
   );
 }
@@ -98,7 +107,12 @@ function generateToken(len = 6) {
 const s = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: "#fff" },
   title: { fontSize: 20, fontWeight: "800", marginBottom: 12 },
-  info: { backgroundColor: "#f6f7fb", padding: 14, borderRadius: 10, marginBottom: 18 },
+  info: {
+    backgroundColor: "#f6f7fb",
+    padding: 14,
+    borderRadius: 10,
+    marginBottom: 18,
+  },
   label: { color: "#666", fontSize: 13 },
   value: { fontSize: 18, fontWeight: "700", marginTop: 6 },
 });
