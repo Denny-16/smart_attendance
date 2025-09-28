@@ -9,10 +9,10 @@ export default function HomeChooser() {
     <View style={s.container}>
       <Text style={s.title}>Choose your role</Text>
       <Link href="/student" asChild>
-        <PrimaryButton title="I am Student (Kalyan)" />
+        <PrimaryButton title="I am Student" />
       </Link>
       <Link href="/teacher" asChild>
-        <PrimaryButton title="I am Teacher (Denny)" />
+        <PrimaryButton title="I am Teacher" />
       </Link>
     </View>
   );
